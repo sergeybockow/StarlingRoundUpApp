@@ -1,0 +1,23 @@
+//
+//  CustomerDetails.swift
+//  starling
+//
+//  Created by Сергей Бочков on 24.01.2026.
+//
+
+enum CustomerDetails {
+    static let accessToken = "eyJhbGciOiJQUzI1NiIsInppcCI6IkdaSVAifQ.H4sIAAAAAAAA_21Uy27jMAz8lcLnsrDiR-Lcetsf2A-gKKoRakuGJLdbLPbfV47sOA5y88yQQ1Ik_LcwIRTnAkcDigf3FiL63tgPifbzjdxQvBZhkilCi4pU3ZRw0PUB6rZpoSNRAYoWBbdStqpOwfxnLM7i2HatOHZ1_VoYjJloKtHMBBK5ycZfrlfsfxu1eHeHCuEoiaGumgaQSwTqTsSEh1o3XfKO7pNtzigrLjutJRxEKaGWnQApBAFhI4iFJDyplJHGeifiELY6x8OpBD6qBuouVZSVTMXkUWpVVmUlT_PA5EaeHyV3Cpdrq2Bx4LNnVC8PQvwZHwSj2EajDfs935sQd8wClPKpyTMrE28gKzEiXQa-RW7425vILzjFi_MmpJWBscp8GTVhn4Ml9mhpaY3QKyBno3d9LjQzi-asNn7AaJwFp0FPVi0N0BSiG9Y5eECzZGtmBWnbzkeg8JX1Aa3CyGfFPafmVpg1jpgQninBWVzx1W7EH-ZVymAxyWALAjPgx-KZte0TokcbkOZBbjT0jtKTbN6ZADe_zSO7ZHmnTb-WyrV31DXKM7EZ4w6EvZSXFPAr7SfAh9v62HHLqDvu6nPP5OF02sUTi0184rWJ2ZQurKY-7S-Nvd1W4BjTgNO4wBHX20k_hXRa6cKcV3fl9-xad88-yQf3bW985LmB7YI2alQ6U_c7va7iccnFv_-q_XVlxwQAAA.IYHbL0DwmWbKdbZaF9rOcXYr9YA9jwIN3tujDx4VeYxmAXuPh-gPuWI5GixxTKE5QQmPAYevgMBfkE3oJfUtk5-vLzCiX0u8_I3ca7urt1bgqnx45RLw3NBjppWAjX_B2RL5mAGF-Y-aKYlFk-5EloXoF8f8patOqAUeeQ-chpSEJrD7ilHhLIAcm9okRGRnHSv8le7tDsT2uBt4PaPp7XfVBHiBgLCmMBNIGVFP7d9HKnIdRQZXKP2YX0foteEJBXc-p-_W9aYQ5r7ukTgiB3pD29L16jgdeGcBvCeuS-jediEml7gtJZFNRAL6GH_Rgs2531LTIlpT68BA8mejo1hvkmpVyi-ESvYXiyAfmCdc13ba2WGpfyxK5QYut2izW3k2rR58UzWuOz7KSKct4XszCXRDwOKseacdGWphk-gaN2ixPu7qrHg9Dnz-pYqdeCSvO2y4Xdtmk7KwVeiLJ-pJNtOhFPu5X7V7mXVlJcZuVT0Q_vbk6O4vaH4G2-BeQX-0JWFRr3Oa8FijaTDcBnWMkYyM104hYCBqQwWupmW9bXZT14TvJVZsjn8ZVDKQ2SLOEFPVjVw4S5O_n2BoCAYtTF5QEj3UnMxvCgp-ZRjgGtiTs9G62HMPqA76yaCmpUfVUNDnNyr5FqEXTqstvgk9yrYXmIabDaghAQY8W2o"
+    static let fieldContentType = "application/json"
+    static let fieldAccept = "application/json"
+}
+
+enum TransactionDirection: String, Decodable {
+    case outgoing = "OUT"
+    case incoming = "IN"
+}
+
+enum TransactionStatus: String, Decodable {
+    case settled = "SETTLED"
+    case pending = "PENDING"
+    case declined = "DECLINED"
+}
