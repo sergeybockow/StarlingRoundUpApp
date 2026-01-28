@@ -16,7 +16,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         setupUI()
         
-        let manager = AccountManager()
+        let manager = StarlingManager()
         
         Task {
             do {
