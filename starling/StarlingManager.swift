@@ -13,6 +13,39 @@ enum ApiError: Error {
     case decodingError
 }
 
+enum StarlingEndpoint {
+    case accounts
+    case transactions(account: String, category: String)
+    
+    private var path: String {
+        switch self {
+        case .accounts:
+            return "/api/v2/accounts"
+        case .transactions(account: let account, category: let category):
+            return "/api/v2/feed/account/\(account)/category/\(category)/transactions-between"
+        }
+    }
+    
+    private var queryItems: [URLQueryItem]? {
+        switch self {
+        case .accounts:
+            return nil
+        case .transactions:
+            return [
+                URLQueryItem(name: "minTransactionTimestamp", value: "2026-01-01T00:00:00Z"),
+                URLQueryItem(name: "maxTransactionTimestamp", value: "2026-01-31T23:59:59Z")
+            ]
+        }
+    }
+    
+    func url(baseURL: String) -> URL? {
+        var components = URLComponents(string: baseURL)
+        components?.path = self.path
+        components?.queryItems = self.queryItems
+        return components?.url
+    }
+}
+
 struct Account: Decodable {
     let accountUid: String
     let defaultCategory: String
@@ -29,62 +62,53 @@ struct CurrencyAndAmount: Decodable {
 
 struct TransactionItem: Decodable {
     let amount: CurrencyAndAmount
-    let direction: TransactionDirection     // CustomerDetails.swift
-    let status: TransactionStatus           // CustomerDetails.swift
+    let direction: TransactionDirection
+    let status: TransactionStatus
 }
 
 struct TransactionFeedResponse: Decodable {
     let feedItems: [TransactionItem]
 }
 
-final class StarlingManager {
+protocol StarlingManager {
+    func fetchAccounts() async throws -> [Account]
+    func fetchTransactions(account: String, category: String) async throws -> [TransactionItem]
+}
+
+final class StarlingManagerImpl: StarlingManager {
     let baseUrl = "https://api-sandbox.starlingbank.com"
     
-    private var jsonDecoder: JSONDecoder {
-        let decoder = JSONDecoder()
-        return decoder
-    }
-    
-    let urlSession: URLSession
+    private let jsonDecoder = JSONDecoder()
+    private let urlSession: URLSession
     
     init(urlSession: URLSession = .shared) {
         self.urlSession = urlSession
     }
     
     func fetchAccounts() async throws -> [Account] {
-        let urlString = baseUrl + "/api/v2/accounts"
-        
-        guard let request = createRequest(urlString: urlString) else {
-            throw ApiError.invalidUrl
-        }
-        
-        let (data, response) = try await urlSession.data(for: request)
-        
-        try validate(response)
-        
-        let decodeResponse = try jsonDecoder.decode(AccountHolder.self, from: data)
-        
-        return decodeResponse.accounts
+        let response: AccountHolder = try await performRequest(endpoint: .accounts)
+        return response.accounts
     }
     
     func fetchTransactions(account: String, category: String) async throws -> [TransactionItem] {
-        let urlString = baseUrl + "/api/v2/feed/account/\(account)/category/\(category)/transactions-between?minTransactionTimestamp=2026-01-01T00:00:00Z&maxTransactionTimestamp=2026-01-31T23:59:59Z"
-        
-        guard let request = createRequest(urlString: urlString) else {
+        let response: TransactionFeedResponse = try await performRequest(endpoint: .transactions(account: account, category: category))
+        return response.feedItems
+    }
+    
+    private func performRequest<T: Decodable>(endpoint: StarlingEndpoint) async throws -> T {
+        guard let url = endpoint.url(baseURL: baseUrl) else {
             throw ApiError.invalidUrl
         }
         
-        let (data, response) = try await urlSession.data(for: request)
+        let request = createRequest(url: url)
         
+        let (data, response) = try await urlSession.data(for: request)
         try validate(response)
         
-        let decode = try jsonDecoder.decode(TransactionFeedResponse.self, from: data)
-        
-        return decode.feedItems
+        return try jsonDecoder.decode(T.self, from: data)
     }
     
-    private func createRequest(urlString: String) -> URLRequest? {
-        guard let url = URL(string: urlString) else { return nil }
+    private func createRequest(url: URL) -> URLRequest {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.addValue("Bearer \(CustomerDetails.accessToken)", forHTTPHeaderField: "Authorization")
@@ -105,9 +129,7 @@ final class StarlingManager {
     }
 }
 
-// MARK: - Business Logic
-
-extension StarlingManager {
+final class RoundUpService {
     func calculateRoundUp(from transactions: [TransactionItem]) -> Int {
         let filtered = transactions.filter { $0.direction == .outgoing && $0.status == .settled }
         

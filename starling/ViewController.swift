@@ -12,23 +12,31 @@ class ViewController: UIViewController {
     private let amountLabel = UILabel()
     private let titleLabel = UILabel()
     
+    private let manager = StarlingManagerImpl()
+    private let roundUpService = RoundUpService()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        
-        let manager = StarlingManager()
+        loadData()
+    }
+    
+    private func loadData() {
         
         Task {
             do {
                 let accounts = try await manager.fetchAccounts()
-                guard let account = accounts.first else { return }
+                guard let account = accounts.first else {
+                    print("⚠️ No accounts found")
+                    return
+                }
                 
                 let transactions = try await manager.fetchTransactions(
                     account: account.accountUid,
                     category: account.defaultCategory
                 )
                 
-                let totalPence = manager.calculateRoundUp(from: transactions)
+                let totalPence = roundUpService.calculateRoundUp(from: transactions)
                 let pounds = Double(totalPence) / 100.0
                 
                 await MainActor.run {
