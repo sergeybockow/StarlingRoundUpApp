@@ -4,7 +4,7 @@
 //
 //  Created by Сергей Бочков on 24.01.2026.
 //
-
+//
 import Foundation
 
 enum ApiError: Error {
