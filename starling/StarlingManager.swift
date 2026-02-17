@@ -1,5 +1,5 @@
 //
-//  ApiManager.swift
+//  StarlingManager.swift
 //  starling
 //
 //  Created by Сергей Бочков on 24.01.2026.
@@ -133,15 +133,11 @@ final class RoundUpService {
     func calculateRoundUp(from transactions: [TransactionItem]) -> Int {
         let filtered = transactions.filter { $0.direction == .outgoing && $0.status == .settled }
         
-        let totalRoundUp = filtered.reduce(0) { sum, transactions in
-            let pence = transactions.amount.minorUnits % 100
+        return filtered.reduce(0) { sum, transaction in
+            let pence = transaction.amount.minorUnits % 100
             
-            if pence > 0 {
-                let gap = 100 - pence
-                return sum + gap
-            }
-            return sum
+            let gap = pence == 0 ? 0 : (100 - pence)
+            return sum + gap
         }
-        return totalRoundUp
     }
 }
